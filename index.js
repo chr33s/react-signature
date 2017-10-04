@@ -1,11 +1,16 @@
 import React, { Component } from 'react'
+import PropTypes from 'prop-types'
 
 class Signature extends Component {
-  state = {
-    path: '',
-    isDown: false
-  }
+  constructor (props) {
+    super(props)
 
+    this.state = {
+      path: props.value || '',
+      isDown: false
+    }
+  }
+  
   isTouchEvent = e => {
     return e.type.match(/^touch/)
   }
@@ -14,7 +19,7 @@ class Signature extends Component {
     const pos = this.refs.svg.getBoundingClientRect()
     const X = (this.isTouchEvent(e) ? e.targetTouches[0].clientX : e.clientX) - pos.left // - svg.offsetLeft
     const Y = (this.isTouchEvent(e) ? e.targetTouches[0].clientY : e.clientY) - pos.top // - svg.offsetTop
-    return X + ',' + Y
+    return `${X},${Y}`
   }
 
   down = e => {
@@ -40,23 +45,29 @@ class Signature extends Component {
     if (this.isTouchEvent(e)) e.preventDefault()
   }
 
-  clear = () => {
+  clear = e => {
+    if (e) e.preventDefault()
+
     this.setState({path: ''})
   }
 
-  load = path => {
-    this.setState({path})
-  }
-
-  get = () => {
-    return this.state.path
-  }
-
   render () {
+    const { path } = this.state
+    const { value, ...props } = this.props
+
     return (
-      <div>
-        <svg ref='svg' width='300' height='100' viewBox='0 0 300 100' xmlns='http://www.w3.org/2000/svg'>
-          <rect width='300' height='100' fill='#fff'
+      <div className='signature'>
+        <svg
+          ref='svg'
+          width='100%'
+          xmlns='http://www.w3.org/2000/svg'
+        >
+          <rect
+            rx='5'
+            ry='5'
+            fill='#fff'
+            width='100%'
+            height='100%'
             onMouseDown={this.down}
             onMouseMove={this.move}
             onMouseUp={this.up}
@@ -65,13 +76,50 @@ class Signature extends Component {
             onTouchEnd={this.up}
             onMouseOut={this.up}
           />
-          <line x1='0' y1='80' x2='300' y2='80' stroke='#ccc' strokeWidth='1' strokeDasharray='3' shapeRendering='crispEdges' pointerEvents='none' />
-          <path stroke='black' strokeWidth='2' fill='none' pointerEvents='none' d={this.state.path} />
+          <line
+            x1='2.5%'
+            y1='90%'
+            x2='97.5%'
+            y2='90%'
+            stroke='#ccc'
+            strokeWidth='1'
+            strokeDasharray='3'
+            shapeRendering='crispEdges'
+            pointerEvents='none'
+          />
+          <path
+            stroke='#111'
+            strokeWidth='2'
+            strokeLinecap='round'
+            strokeLinejoin='round'
+            strokeMiterlimit='5'
+            fill='none'
+            pointerEvents='none'
+            d={path}
+          />
         </svg>
-        <input type='hidden' name='signature' required value={this.state.path} />
+        <a
+          href='#clear'
+          className='clear'
+          onClick={this.clear}
+        >
+          Clear
+        </a>
+        <input
+          {...props}
+          value={path}
+          type='hidden'
+          pattern={`[ML,0-9 ]${props.required ? '+' : '*'}`}
+        />
       </div>
     )
   }
+}
+
+Signature.propTypes = {
+  value: PropTypes.string,
+  name: PropTypes.string.isRequired,
+  required: PropTypes.bool.isRequired
 }
 
 export default Signature

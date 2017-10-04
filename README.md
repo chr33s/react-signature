@@ -17,19 +17,14 @@ A universal react svg signature component.
 const Signature = require('@chr33s/react-signature')
 
 <form>
-    <Signature ref={(signature) => {this.signature = signature}} />
+    <Signature
+      value='default value'
+      ref={(signature) => {this.signature = signature}}
+    />
 </form>
 ```
 
 ## api
-
-### `this.signature.load(path)`
-
-Load a signature from a path
-
-### `this.signature.get()`
-
-Get the signature path
 
 ### `this.signature.clear()`
 
