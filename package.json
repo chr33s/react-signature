@@ -1,27 +1,32 @@
 {
   "name": "@chr33s/react-signature",
-  "version": "1.0.1",
-  "description": "React SVG Signature Component",
+  "version": "1.1.0",
+  "description": "Universal React SVG Signature Component",
   "main": "index.js",
+  "browser": "browser.js",
   "scripts": {
     "prebuild": "mkdir -p dist",
-    "build": "browserify ./index.js > ./dist/signature.js",
+    "build": "browserify ./browser.js > ./dist/signature.js",
     "postbuild": "npm run build:min && npm run build:gz",
     "build:min": "uglifyjs ./dist/signature.js -o ./dist/signature.min.js -cm",
     "build:gz": "gzip -c --best ./dist/signature.min.js > ./dist/signature.min.js.gz"
   },
   "peerDependencies": {
-    "react": "^15.6.1",
-    "react-dom": "^15.6.1"
+    "react": "16.0.0-beta.5",
+    "react-dom": "16.0.0-beta.5",
+    "react-native": "^0.49.3",
+    "react-native-svg": "^5.4.2"
   },
   "devDependencies": {
-    "babel": "^6.23.0",
-    "babel-preset-es2015": "^6.24.1",
-    "babel-preset-react": "^6.24.1",
-    "babel-preset-stage-0": "^6.24.1",
-    "babelify": "^7.3.0",
-    "browserify": "^14.3.0",
-    "uglify-js": "^2.8.22"
+    "babel-preset-env": "next",
+    "babel-preset-react": "next",
+    "babel-preset-stage-0": "next",
+    "babelify": "github:chr33s/babelify#11dbb71e68bcfd1025eec16617aab911892406c9",
+    "browserify": "^14.5.0",
+    "uglify-js": "^3.1.4"
+  },
+  "dependencies": {
+    "prop-types": "^15.6.0"
   },
   "browserify": {
     "transform": [
@@ -29,13 +34,18 @@
         "babelify",
         {
           "presets": [
-            "es2015",
+            "env",
             "stage-0",
             "react"
           ]
         }
       ]
-    ]
+    ],
+    "env": {
+      "development": {
+        "plugins": ["transform-react-jsx-source"]
+      }
+    }
   },
   "author": "chris",
   "homepage": "https://github.com/chr33s/react-signature",
@@ -45,11 +55,9 @@
   },
   "keywords": [
     "React",
+    "ReactNative",
     "SVG",
     "Signature"
   ],
-  "license": "MIT",
-  "dependencies": {
-    "prop-types": "^15.6.0"
-  }
+  "license": "MIT"
 }

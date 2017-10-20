@@ -1,7 +1,8 @@
 import React, { Component } from 'react'
-import PropTypes from 'prop-types'
+import { StyleSheet, Text, TextInput, TouchableHighlight, View } from 'react-native'
+import Svg, { Line, Rect, Path } from 'react-native-svg'
 
-class Signature extends Component {
+export default class Signature extends Component {
   constructor (props) {
     super(props)
 
@@ -10,73 +11,86 @@ class Signature extends Component {
       isDown: false
     }
   }
-  
-  isTouchEvent = e => {
-    return e.type.match(/^touch/)
+
+  componentWillReceiveProps (props) {
+    if (props.value) {
+      this.setState({
+        path: props.value
+      })
+    }
   }
 
-  getCoords = e => {
-    const pos = this.refs.svg.getBoundingClientRect()
-    const X = (this.isTouchEvent(e) ? e.targetTouches[0].clientX : e.clientX) - pos.left // - svg.offsetLeft
-    const Y = (this.isTouchEvent(e) ? e.targetTouches[0].clientY : e.clientY) - pos.top // - svg.offsetTop
+  getCoords (e) {
+    const { locationX, locationY } = e.nativeEvent
+    const X = parseInt(locationX)
+    const Y = parseInt(locationY)
     return `${X},${Y}`
   }
 
-  down = e => {
-    this.setState({
+  set (state) {
+    this.setState(state)
+
+    if (state.path === undefined) return
+
+    this.props.onValueChange(state.path)
+  }
+
+  down (e) {
+    this.set({
       path: `${this.state.path}M${this.getCoords(e)} `,
       isDown: true
     })
-
-    if (this.isTouchEvent(e)) e.preventDefault()
   }
 
-  move = e => {
+  move (e) {
     if (this.state.isDown) {
-      this.setState({path: `${this.state.path}L${this.getCoords(e)} `})
+      this.set({
+        path: `${this.state.path}L${this.getCoords(e)} `
+      })
     }
-
-    if (this.isTouchEvent(e)) e.preventDefault()
   }
 
-  up = e => {
-    this.setState({isDown: false})
-
-    if (this.isTouchEvent(e)) e.preventDefault()
+  up (e) {
+    this.set({
+      isDown: false
+    })
   }
 
-  clear = e => {
-    if (e) e.preventDefault()
-
-    this.setState({path: ''})
+  clear (e) {
+    this.set({
+      path: ''
+    })
   }
 
   render () {
     const { path } = this.state
-    const { value, ...props } = this.props
 
     return (
-      <div className='signature'>
-        <svg
+      <View style={styles.signature}>
+        <TouchableHighlight
+          style={styles.button}
+          underlayColor='transparent'
+          onPress={this.clear.bind(this)}
+        >
+          <Text style={styles.buttonText}>Clear</Text>
+        </TouchableHighlight>
+        <Svg
           ref='svg'
           width='100%'
+          height='100'
           xmlns='http://www.w3.org/2000/svg'
         >
-          <rect
+          <Rect
             rx='5'
             ry='5'
             fill='#fff'
             width='100%'
             height='100%'
-            onMouseDown={this.down}
-            onMouseMove={this.move}
-            onMouseUp={this.up}
-            onTouchStart={this.down}
-            onTouchMove={this.move}
-            onTouchEnd={this.up}
-            onMouseOut={this.up}
+            onPressIn={this.down.bind(this)}
+            onResponderMove={this.move.bind(this)}
+            onPressOut={this.up.bind(this)}
           />
-          <line
+          <Line
             x1='2.5%'
             y1='90%'
             x2='97.5%'
@@ -84,42 +98,42 @@ class Signature extends Component {
             stroke='#ccc'
             strokeWidth='1'
             strokeDasharray='3'
-            shapeRendering='crispEdges'
-            pointerEvents='none'
           />
-          <path
+          <Path
+            d={path}
+            fill='none'
             stroke='#111'
             strokeWidth='2'
             strokeLinecap='round'
             strokeLinejoin='round'
             strokeMiterlimit='5'
-            fill='none'
-            pointerEvents='none'
-            d={path}
           />
-        </svg>
-        <a
-          href='#clear'
-          className='clear'
-          onClick={this.clear}
-        >
-          Clear
-        </a>
-        <input
-          {...props}
+        </Svg>
+        <TextInput
+          caretHidden
           value={path}
-          type='hidden'
-          pattern={`[ML,0-9 ]${props.required ? '+' : '*'}`}
+          editable={false}
+          style={{ height: 0 }}
+          underlineColorAndroid='transparent'
         />
-      </div>
+      </View>
     )
   }
 }
 
-Signature.propTypes = {
-  value: PropTypes.string,
-  name: PropTypes.string.isRequired,
-  required: PropTypes.bool.isRequired
-}
-
-export default Signature
+const styles = StyleSheet.create({
+  signature: {
+    position: 'relative'
+  },
+  button: {
+    width: 40,
+    position: 'absolute',
+    right: 2,
+    top: 7,
+    zIndex: 2
+  },
+  buttonText: {
+    color: '#7b7b7b',
+    fontSize: 12
+  }
+})
